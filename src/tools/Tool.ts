@@ -13,13 +13,17 @@ export default class Tool {
     }
 
     set fillColor(color) {
+        if(!this.ctx) return
         this.ctx.fillStyle = color
     }
+
     set strokeColor(color) {
+        if(!this.ctx) return
         this.ctx.strokeStyle = color
     }
 
     set lineWidth(width) {
+        if(!this.ctx) return
         this.ctx.lineWidth = width
     }
 

@@ -2,13 +2,9 @@ import Tool from "./Tool";
 
 export default class Line extends Tool {
     mouseDown: boolean
-    startX: number
-    startY: number
     currentX: number
     currentY: number
     saved: string
-    endY: number
-    endX: number
 
     constructor(canvas, socket, id) {
         super(canvas, socket, id);
@@ -23,19 +19,26 @@ export default class Line extends Tool {
 
     mouseUpHandler(e) {
         this.mouseDown = false
-        // this.draw(this.startX, this.startY, this.width, this.height)
-        // this.socket.send(JSON.stringify({
-        //     method: 'draw',
-        //     id: this.id,
-        //     figure: {
-        //         type: 'rect',
-        //         x: this.startX,
-        //         y: this.startY,
-        //         width: this.width,
-        //         height: this.height,
-        //         color: this.ctx.fillStyle
-        //     }
-        // }))
+        this.socket.send(JSON.stringify({
+            method: 'draw',
+            id: this.id,
+            figure: {
+                type: 'line',
+                x: this.currentX,
+                y: this.currentY,
+                width: e.pageX-e.target.offsetLeft,
+                height: e.pageY-e.target.offsetTop,
+                stroke: this.ctx.strokeStyle,
+                lineWidth: this.ctx.lineWidth,
+            }
+        }))
+        this.socket.send(JSON.stringify({
+            method: 'draw',
+            id: this.id,
+            figure: {
+                type: 'finish',
+            }
+        }))
     }
 
     mouseDownHandler(e) {
@@ -44,7 +47,7 @@ export default class Line extends Tool {
         this.currentX = e.pageX - e.target.offsetLeft;
         this.currentY = e.pageY - e.target.offsetTop;
         this.ctx.beginPath()
-        this.ctx.moveTo(this.currentX, this.currentY )
+        this.ctx.moveTo(this.currentX, this.currentY)
         this.saved = this.canvas.toDataURL()
     }
 
@@ -67,11 +70,15 @@ export default class Line extends Tool {
         }.bind(this)
     }
 
-    static staticDraw(ctx, x, y, w, h, color) {
-        ctx.fillStyle = color
+    static draw(ctx, x, y, w, h, stroke, lineWidth) {
+        const {strokeStyle: lastStroke, lineWidth: lastWidth} = ctx
+        ctx.strokeStyle = stroke
+        ctx.lineWidth = lineWidth
         ctx.beginPath()
-        ctx.rect(x, y, w, h)
-        ctx.fill()
+        ctx.moveTo(x, y)
+        ctx.lineTo(w, h)
         ctx.stroke()
+        ctx.strokeStyle = lastStroke
+        ctx.lineWidth = lastWidth
     }
 }
