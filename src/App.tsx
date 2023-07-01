@@ -1,15 +1,20 @@
-import './App.css'
-import Canvas from "./components/Canvas";
-import Toolbar from "./components/Toolbar";
-import SettingBar from "./components/SettingBar";
+// import './App.css'
+import './styles/main.scss'
+import {Link, Route, Routes} from "react-router-dom";
+import PageNotFound from "./pages/PageNotFound";
+import {RouteNames} from "./routes";
+import CanvasPage from "./pages/CanvasPage";
+import CreateCanvasPage from "./pages/CreateCanvasPage";
 
 function App() {
     return (
-        <div>
-            <Toolbar/>
-            <SettingBar/>
-            <Canvas/>
-        </div>
+        <Routes>
+            <Route path={RouteNames.MAIN} element={<CreateCanvasPage/>}/>
+            <Route path={RouteNames.CANVAS} element={<CanvasPage/>}>
+                <Route path={RouteNames.CANVAS_PARAMS} element={<CanvasPage/>}/>
+            </Route>
+            <Route path={'*'} element={<PageNotFound path={RouteNames.MAIN}/>}/>
+        </Routes>
     )
 }
 

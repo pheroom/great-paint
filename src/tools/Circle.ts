@@ -29,6 +29,30 @@ export default class Circle extends Tool {
 
     mouseUpHandler(e) {
         this.mouseDown = false
+        const currentX = e.pageX-e.target.offsetLeft
+        const currentY = e.pageY-e.target.offsetTop
+        const width = currentX-this.startX
+        const height = currentY-this.startY
+        this.socket.send(JSON.stringify({
+            method: 'draw',
+            id: this.id,
+            figure: {
+                type: 'circle',
+                x: this.startX,
+                y: this.startY,
+                r: Math.sqrt(width**2 + height**2),
+                stroke: this.ctx.strokeStyle,
+                fill: this.ctx.fillStyle,
+                lineWidth: this.ctx.lineWidth,
+            }
+        }))
+        this.socket.send(JSON.stringify({
+            method: 'draw',
+            id: this.id,
+            figure: {
+                type: 'finish',
+            }
+        }))
     }
 
     mouseMoveHandler(e) {
@@ -53,5 +77,19 @@ export default class Circle extends Tool {
             this.ctx.fill()
             this.ctx.stroke()
         }.bind(this)
+    }
+
+    static draw(ctx,x,y,r,stroke,fill,lineWidth) {
+        const {fillStyle: lastFill, strokeStyle: lastStroke, lineWidth: lastWidth} = ctx
+        ctx.fillStyle = fill
+        ctx.strokeStyle = stroke
+        ctx.lineWidth = lineWidth
+        ctx.beginPath()
+        ctx.arc(x, y, r, 0, 2*Math.PI)
+        ctx.fill()
+        ctx.stroke()
+        ctx.fillStyle = lastFill
+        ctx.strokeStyle = lastStroke
+        ctx.lineWidth = lastWidth
     }
 }

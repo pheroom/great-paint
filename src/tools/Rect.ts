@@ -21,20 +21,35 @@ export default class Rect extends Tool {
 
     mouseUpHandler(e) {
         this.mouseDown = false
-        this.draw(this.startX, this.startY, this.width, this.height)
-        // this.socket.send(JSON.stringify({
-        //     method: 'draw',
-        //     id: this.id,
-        //     figure: {
-        //         type: 'rect',
-        //         x: this.startX,
-        //         y: this.startY,
-        //         width: this.width,
-        //         height: this.height,
-        //         color: this.ctx.fillStyle
-        //     }
-        // }))
+        const img = new Image()
+        img.src = this.saved
+        img.onload = () => {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+            this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height)
+        }
+        this.socket.send(JSON.stringify({
+            method: 'draw',
+            id: this.id,
+            figure: {
+                type: 'rect',
+                x: this.startX,
+                y: this.startY,
+                width: this.width,
+                height: this.height,
+                fill: this.ctx.fillStyle,
+                stroke: this.ctx.strokeStyle,
+                lineWidth: this.ctx.lineWidth
+            }
+        }))
+        this.socket.send(JSON.stringify({
+            method: 'draw',
+            id: this.id,
+            figure: {
+                type: 'finish',
+            }
+        }))
     }
+
     mouseDownHandler(e) {
         this.mouseDown = true
         this.ctx.beginPath()
@@ -42,6 +57,7 @@ export default class Rect extends Tool {
         this.startY = e.pageY - e.target.offsetTop;
         this.saved = this.canvas.toDataURL()
     }
+
     mouseMoveHandler(e) {
         if (this.mouseDown) {
             const currentX = e.pageX - e.target.offsetLeft;
@@ -65,11 +81,18 @@ export default class Rect extends Tool {
         }
     }
 
-    static staticDraw(ctx, x, y, w, h, color) {
-        ctx.fillStyle = color
+    static draw(ctx, x, y, w, h, stroke, fill, lineWidth) {
+        const {fillStyle: lastFill, strokeStyle: lastStroke, lineWidth: lastWidth} = ctx
+        ctx.fillStyle = fill
+        ctx.strokeStyle = stroke
+        ctx.lineWidth = lineWidth
         ctx.beginPath()
         ctx.rect(x, y, w, h)
         ctx.fill()
         ctx.stroke()
+        ctx.fillStyle = lastFill
+        ctx.strokeStyle = lastStroke
+        ctx.lineWidth = lastWidth
+
     }
 }

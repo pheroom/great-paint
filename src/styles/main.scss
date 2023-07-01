@@ -1,0 +1,93 @@
+@import '../../node_modules/bootstrap/dist/css/bootstrap.min.css';
+
+@import '_reset';
+@import '_variables';
+@import '_mixins';
+
+.app {
+    height: 100vh;
+    max-height: 100vh;
+    width: 100vw;
+    background-color: #F6F6F6;
+}
+
+.canvas {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+canvas {
+    border: 1px solid black;
+    background-color: white;
+}
+
+.toolbar {
+    height: 40px;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    position: absolute;
+    width: 100%;
+    box-shadow: 0 4px 5px gray;
+    z-index: 999;
+    &__btn {
+        height: 35px;
+        width: 35px;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        background-size: cover;
+        margin-left: 10px;
+        padding: 5px;
+        &--active{
+            border: 2px solid aqua;
+            border-radius: 5px;
+        }
+    }
+    &__brush {
+        background: url('../assets/img/brush.png') no-repeat center center;
+    }
+    &__rect {
+        background: url('../assets/img/rect.png') no-repeat center center;
+    }
+    &__circle {
+        background: url('../assets/img/circle.png') no-repeat center center;
+    }
+    &__eraser {
+        background: url('../assets/img/eraser.png') no-repeat center center;
+    }
+    &__line {
+        background: url('../assets/img/line.png') no-repeat center center;
+    }
+    &__undo {
+        margin-left: auto;
+        background: url('../assets/img/undo.png') no-repeat center center;
+    }
+    &__redo {
+        background: url('../assets/img/redo.png') no-repeat center center;
+    }
+    &__save {
+        background: url('../assets/img/save.png') no-repeat center center;
+        margin-right: 10px;
+    }
+}
+
+
+.active{
+    background: aqua;
+}
+
+.setting-bar {
+    height: 40px;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    position: absolute;
+    width: 100%;
+    box-shadow: 0 4px 5px gray;
+    top: 40px;
+}
+
+@import '_media';

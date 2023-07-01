@@ -1,8 +1,4 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+@import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
 /*#root {*/
 /*    max-width: 1280px;*/
@@ -51,31 +47,8 @@ canvas {
      margin-left: 10px;
 }
 
-.brush {
-    background: url('assets/img/brush.png') no-repeat center center;
-}
-.rect {
-    background: url('assets/img/rect.png') no-repeat center center;
-}
-.circle {
-    background: url('assets/img/circle.png') no-repeat center center;
-}
-.eraser {
-    background: url('assets/img/eraser.png') no-repeat center center;
-}
-.line {
-    background: url('assets/img/line.png') no-repeat center center;
-}
-.undo {
-    margin-left: auto;
-    background: url('assets/img/undo.png') no-repeat center center;
-}
-.redo {
-    background: url('assets/img/redo.png') no-repeat center center;
-}
-.save {
-    background: url('assets/img/save.png') no-repeat center center;
-    margin-right: 10px;
+.active{
+    background: aqua;
 }
 
 .setting-bar {

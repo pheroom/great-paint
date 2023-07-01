@@ -1,5 +1,4 @@
-import React from 'react';
-// import '../styles/toolbar.scss'
+import React, {useState} from 'react';
 import toolState from "../store/toolState";
 import Brush from "../tools/Brush";
 import canvasState from "../store/canvasState";
@@ -7,20 +6,16 @@ import Rect from "../tools/Rect";
 import Line from "../tools/Line";
 import Circle from "../tools/Circle";
 import Eraser from "../tools/Eraser";
+import {Link} from "react-router-dom";
+import {RouteNames} from "../routes";
+import {observer} from "mobx-react-lite";
 
-const Toolbar = () => {
-
-    const changeColor = e => {
-        toolState.setStrokeColor(e.target.value)
-        toolState.setFillColor(e.target.value)
-    }
-
+const Toolbar = observer(() => {
     const download = () => {
         const dataUrl = canvasState.canvas.toDataURL()
-        console.log(dataUrl)
         const a = document.createElement('a')
         a.href = dataUrl
-        a.download = 'namename' + ".jpg"
+        a.download = canvasState.sessionId + ".jpg"
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
@@ -28,17 +23,17 @@ const Toolbar = () => {
 
     return (
         <div className="toolbar">
-            <button className="toolbar__btn brush" onClick={() => toolState.setTool(new Brush(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
-            <button className="toolbar__btn rect" onClick={() => toolState.setTool(new Rect(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
-            <button className="toolbar__btn circle" onClick={() => toolState.setTool(new Circle(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
-            <button className="toolbar__btn eraser" onClick={() => toolState.setTool(new Eraser(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
-            <button className="toolbar__btn line" onClick={() => toolState.setTool(new Line(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
-            <input onChange={e => changeColor(e)} style={{marginLeft:10}} type="color"/>
-            <button className="toolbar__btn undo" onClick={() => canvasState.undo()}/>
-            <button className="toolbar__btn redo" onClick={() => canvasState.redo()}/>
-            <button className="toolbar__btn save" onClick={() => download()}/>
+            <Link to={RouteNames.MAIN}>Menu</Link>
+            <button className={'toolbar__btn toolbar__brush ' + (toolState.tool instanceof Brush ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Brush(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
+            <button className={"toolbar__btn toolbar__rect " + (toolState.tool instanceof Rect ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Rect(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
+            <button className={"toolbar__btn toolbar__circle " + (toolState.tool instanceof Circle ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Circle(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
+            <button className={"toolbar__btn toolbar__eraser " + (toolState.tool instanceof Eraser ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Eraser(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
+            <button className={"toolbar__btn toolbar__line " + (toolState.tool instanceof Line ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Line(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
+            <button className="toolbar__btn toolbar__undo" onClick={() => canvasState.undo()}/>
+            <button className="toolbar__btn toolbar__redo" onClick={() => canvasState.redo()}/>
+            <button className="toolbar__btn toolbar__save" onClick={() => download()}/>
         </div>
     );
-};
+})
 
 export default Toolbar;
