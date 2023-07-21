@@ -24,11 +24,11 @@ const Toolbar = observer(() => {
     return (
         <div className="toolbar">
             <Link to={RouteNames.MAIN}>Menu</Link>
-            <button className={'toolbar__btn toolbar__brush ' + (toolState.tool instanceof Brush ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Brush(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
-            <button className={"toolbar__btn toolbar__rect " + (toolState.tool instanceof Rect ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Rect(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
-            <button className={"toolbar__btn toolbar__circle " + (toolState.tool instanceof Circle ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Circle(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
-            <button className={"toolbar__btn toolbar__eraser " + (toolState.tool instanceof Eraser ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Eraser(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
-            <button className={"toolbar__btn toolbar__line " + (toolState.tool instanceof Line ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Line(canvasState.canvas, canvasState.socket, canvasState.sessionId))}/>
+            <button className={'toolbar__btn toolbar__brush ' + (toolState.tool instanceof Brush ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Brush(canvasState.canvas, canvasState.socket, canvasState.sessionId, canvasState.username))}/>
+            <button className={"toolbar__btn toolbar__rect " + (toolState.tool instanceof Rect ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Rect(canvasState.canvas, canvasState.socket, canvasState.sessionId, canvasState.username))}/>
+            <button className={"toolbar__btn toolbar__circle " + (toolState.tool instanceof Circle ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Circle(canvasState.canvas, canvasState.socket, canvasState.sessionId, canvasState.username))}/>
+            <button className={"toolbar__btn toolbar__eraser " + (toolState.tool instanceof Eraser ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Eraser(canvasState.canvas, canvasState.socket, canvasState.sessionId, canvasState.username))}/>
+            <button className={"toolbar__btn toolbar__line " + (toolState.tool instanceof Line ? 'toolbar__btn--active' : '')} onClick={() => toolState.setTool(new Line(canvasState.canvas, canvasState.socket, canvasState.sessionId, canvasState.username))}/>
             <button className="toolbar__btn toolbar__undo" onClick={() => canvasState.undo()}/>
             <button className="toolbar__btn toolbar__redo" onClick={() => canvasState.redo()}/>
             <button className="toolbar__btn toolbar__save" onClick={() => download()}/>

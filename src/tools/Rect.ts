@@ -8,28 +8,25 @@ export default class Rect extends Tool {
     width: number
     height: number
     
-    constructor(canvas, socket, id) {
-        super(canvas, socket, id);
+    constructor(canvas, socket, id, username) {
+        super(canvas, socket, id, username);
         this.listen()
     }
 
     listen() {
         this.canvas.onmousemove = this.mouseMoveHandler.bind(this)
         this.canvas.onmousedown = this.mouseDownHandler.bind(this)
-        this.canvas.onmouseup = this.mouseUpHandler.bind(this)
+        document.onmouseup = this.mouseUpHandler.bind(this)
     }
 
     mouseUpHandler(e) {
+        if(!this.mouseDown) return
         this.mouseDown = false
-        const img = new Image()
-        img.src = this.saved
-        img.onload = () => {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-            this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height)
-        }
+        if(!this.width || !this.height) return
         this.socket.send(JSON.stringify({
             method: 'draw',
             id: this.id,
+            username: this.username,
             figure: {
                 type: 'rect',
                 x: this.startX,
@@ -41,18 +38,13 @@ export default class Rect extends Tool {
                 lineWidth: this.ctx.lineWidth
             }
         }))
-        this.socket.send(JSON.stringify({
-            method: 'draw',
-            id: this.id,
-            figure: {
-                type: 'finish',
-            }
-        }))
     }
 
     mouseDownHandler(e) {
         this.mouseDown = true
         this.ctx.beginPath()
+        this.width = 0
+        this.height = 0
         this.startX = e.pageX - e.target.offsetLeft;
         this.startY = e.pageY - e.target.offsetTop;
         this.saved = this.canvas.toDataURL()
@@ -69,6 +61,8 @@ export default class Rect extends Tool {
     }
 
     draw(x, y, w, h) {
+        const {fillStyle: lastFill, strokeStyle: lastStroke, lineWidth: lastWidth} = this.ctx
+        console.log(lastFill, lastStroke)
         const img = new Image()
         img.src = this.saved
         img.onload = () => {
@@ -78,10 +72,12 @@ export default class Rect extends Tool {
             this.ctx.rect(x, y, w, h)
             this.ctx.fill()
             this.ctx.stroke()
+            this.ctx.stroke()
         }
     }
 
-    static draw(ctx, x, y, w, h, stroke, fill, lineWidth) {
+    static draw(ctx, figure) {
+        const {x, y, width: w, height: h, stroke, fill, lineWidth} = figure
         const {fillStyle: lastFill, strokeStyle: lastStroke, lineWidth: lastWidth} = ctx
         ctx.fillStyle = fill
         ctx.strokeStyle = stroke
@@ -90,6 +86,7 @@ export default class Rect extends Tool {
         ctx.rect(x, y, w, h)
         ctx.fill()
         ctx.stroke()
+        ctx.closePath()
         ctx.fillStyle = lastFill
         ctx.strokeStyle = lastStroke
         ctx.lineWidth = lastWidth

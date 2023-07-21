@@ -49,11 +49,10 @@ const Canvas = observer(() => {
 
     useEffect(() => {
         if (canvasState.username) {
-            // const socket = new WebSocket(`ws://sphenoid-tested-alyssum.glitch.me/`);
             const socket = WsService.openWs()
             canvasState.setSocket(socket)
             canvasState.setSessionId(params.id)
-            toolState.setTool(new Brush(canvasRef.current, socket, params.id))
+            toolState.setTool(new Brush(canvasRef.current, socket, params.id, canvasState.username))
             socket.onopen = () => {
                 console.log('Подключение установлено')
                 socket.send(JSON.stringify({
@@ -74,27 +73,31 @@ const Canvas = observer(() => {
                         break
                 }
             }
+            socket.onclose = (e) => {
+                console.log(e)
+            }
         }
     }, [params.id])
 
     const drawHandler = (msg) => {
+        if(msg.username === canvasState.username) return
         const figure = msg.figure
         const ctx = canvasState.canvas.getContext('2d')
         switch (figure.type) {
             case "brush":
-                Brush.draw(ctx, figure.x, figure.y, figure.stroke, figure.lineWidth)
+                Brush.draw(ctx, figure.points, figure.stroke, figure.lineWidth)
                 break
             case "rect":
-                Rect.draw(ctx, figure.x, figure.y, figure.width, figure.height, figure.stroke, figure.fill, figure.lineWidth)
+                Rect.draw(ctx, figure)
                 break
             case "eraser":
-                Eraser.draw(ctx, figure.x, figure.y, figure.lineWidth)
+                Eraser.draw(ctx, figure.points, figure.lineWidth)
                 break
             case "circle":
-                Circle.draw(ctx, figure.x, figure.y, figure.r, figure.stroke, figure.fill, figure.lineWidth)
+                Circle.draw(ctx, figure)
                 break
             case "line":
-                Line.draw(ctx, figure.x, figure.y, figure.width, figure.height, figure.stroke, figure.lineWidth)
+                Line.draw(ctx, figure)
                 break
             case "finish":
                 ctx.beginPath()
