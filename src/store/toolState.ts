@@ -1,9 +1,9 @@
 import {makeAutoObservable} from "mobx";
 import Tool from "../tools/Tool";
-import CanvasState from "./canvasState";
 
 class ToolState {
     tool: Tool
+    fillColor: string
 
     constructor() {
         makeAutoObservable(this)
@@ -11,17 +11,23 @@ class ToolState {
 
     setTool(tool) {
         this.tool = tool
+        if(this.fillColor){
+            this.tool.fillColor = this.fillColor
+            this.fillColor = undefined
+        }
     }
 
     setFillColor(color) {
-        if(!this.tool) return
+        if(!this.tool) {
+            this.fillColor = color
+            return
+        }
         this.tool.fillColor = color
     }
 
     setStrokeColor(color) {
         if(!this.tool) return
         this.tool.strokeColor = color
-
     }
 
     setLineWidth(width) {

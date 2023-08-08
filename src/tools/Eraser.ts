@@ -54,7 +54,8 @@ export default class Eraser extends Tool {
         this.ctx.stroke()
     }
 
-    static draw(ctx, points, lineWidth) {
+    static draw(ctx, figure) {
+        const {points, lineWidth} = figure
         const {strokeStyle: lastStroke, lineWidth: lastWidth} = ctx
         ctx.strokeStyle = 'white'
         ctx.lineWidth = lineWidth

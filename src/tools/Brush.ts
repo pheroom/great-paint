@@ -52,7 +52,8 @@ export default class Brush extends Tool {
         this.ctx.stroke()
     }
 
-    static draw(ctx, points, stroke, lineWidth) {
+    static draw(ctx, figure) {
+        const {points, stroke, lineWidth} = figure
         const {strokeStyle: lastStroke, lineWidth: lastWidth} = ctx
         ctx.strokeStyle = stroke
         ctx.lineWidth = lineWidth

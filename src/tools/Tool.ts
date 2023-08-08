@@ -5,7 +5,7 @@ export default class Tool {
     username: string
     ctx: CanvasRenderingContext2D
 
-    constructor(canvas, socket, id, username = '') {
+    constructor(canvas, socket, id, username) {
         this.canvas = canvas
         this.socket = socket
         this.id = id

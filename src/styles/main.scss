@@ -4,11 +4,15 @@
 @import '_variables';
 @import '_mixins';
 
+@import 'loader';
+@import 'ui';
+@import 'customComponents';
+
 .app {
     height: 100vh;
     max-height: 100vh;
     width: 100vw;
-    background-color: #F6F6F6;
+    background-color: #F9FBFD;
 }
 
 .canvas {
@@ -16,6 +20,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    background: #f7fafd;
 }
 
 canvas {
@@ -24,42 +29,54 @@ canvas {
 }
 
 .toolbar {
-    height: 40px;
-    background-color: white;
+    height: 45px;
+    background-color: #F9FBFD;
     display: flex;
     align-items: center;
     position: absolute;
+    padding: 10px 0;
     width: 100%;
-    box-shadow: 0 4px 5px gray;
     z-index: 999;
+    border-bottom: 1px solid black;
     &__btn {
+        margin-left: 10px;
+    }
+    &__menu-btn{
         height: 35px;
         width: 35px;
-        border: none;
-        outline: none;
-        cursor: pointer;
-        background-size: cover;
         margin-left: 10px;
-        padding: 5px;
-        &--active{
-            border: 2px solid aqua;
-            border-radius: 5px;
+        padding: 2px;
+        border-radius: 6px;
+        &:hover{
+            background: #ececec;
+        }
+        &-img{
+            vertical-align: top;
+            width: 100%;
+            height: 100%;
         }
     }
-    &__brush {
-        background: url('../assets/img/brush.png') no-repeat center center;
+    &__label{
+        height: 35px;
+        width: 35px;
+        margin-left: 10px;
+        padding: 5px;
+        &-img{
+            vertical-align: top;
+            width: 100%;
+            height: 100%;
+        }
     }
-    &__rect {
-        background: url('../assets/img/rect.png') no-repeat center center;
+    &__width-input{
+        margin-left: 5px;
+        width: 30px;
+        border: none;
+        text-align: center;
     }
-    &__circle {
-        background: url('../assets/img/circle.png') no-repeat center center;
-    }
-    &__eraser {
-        background: url('../assets/img/eraser.png') no-repeat center center;
-    }
-    &__line {
-        background: url('../assets/img/line.png') no-repeat center center;
+    &__color-input{
+        width: 25px;
+        height: 25px;
+        border: none;
     }
     &__undo {
         margin-left: auto;
@@ -68,26 +85,117 @@ canvas {
     &__redo {
         background: url('../assets/img/redo.png') no-repeat center center;
     }
-    &__save {
-        background: url('../assets/img/save.png') no-repeat center center;
+    &__btn-download{
+        margin-left: auto;
+    }
+    &__canvas-btn{
+        margin: 0 10px;
+    }
+    &__name-input{
         margin-right: 10px;
     }
 }
 
-
-.active{
-    background: aqua;
+.canvas-drawing-alerts-surface{
+    position: absolute;
+    width: 30vw;
+    min-width: 250px;
+    bottom: 10px;
+    right: 20px;
+    z-index: 100;
+    padding-bottom: 40px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    &__hide-btn{
+        position: absolute;
+        right: 5px;
+        bottom: 5px;
+    }
 }
 
 .setting-bar {
     height: 40px;
-    background-color: white;
+    background-color: #bce7f5;
     display: flex;
     align-items: center;
     position: absolute;
-    width: 100%;
-    box-shadow: 0 4px 5px gray;
-    top: 40px;
+    width: calc(100% - 16px);
+    margin: 8px;
+    padding: 0 10px;
+    border-radius: 18px;
+    top: 45px;
+}
+
+.create-canvas{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    &__form{
+        padding: 30px 35px;
+        border: 1px solid rgba(118, 118, 118, 0.5);
+        border-radius: 10px;
+        min-width: 450px;
+    }
+    &__title{
+        margin-bottom: 25px;
+    }
+    &__check-box{
+        margin-bottom: 8px;
+    }
+    &__submit{
+        margin-top: 8px;
+    }
+}
+
+.header{
+    position: absolute;
+    top: 0;
+    width: 100vw;
+    background: #ececec;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    height: 65px;
+    &__logo-box{
+        margin-left: 30px;
+        display: flex;
+        align-items: center;
+    }
+    &__logo-img{
+        height: 40px;
+        width: 40px;
+        margin-right: 10px;
+    }
+    &__name-box{
+        margin: 0 auto;
+        max-width: 200px;
+    }   
+}
+
+.canvas-info{
+    &__input-box{
+        margin-bottom: 10px;
+    }
+    &__name-box{
+        margin-bottom: 5px;
+    }
+    &__name-box{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    &__btn-box{
+        padding-top: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 5px;
+    }
 }
 
 @import '_media';
