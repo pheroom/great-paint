@@ -5,38 +5,38 @@ export default class Line extends Tool {
     currentX: number
     currentY: number
     saved: string
+    width: number
+    height: number
 
-    constructor(canvas, socket, id) {
-        super(canvas, socket, id);
+    constructor(canvas, socket, id, username) {
+        super(canvas, socket, id, username);
         this.listen()
     }
 
     listen() {
         this.canvas.onmousemove = this.mouseMoveHandler.bind(this)
         this.canvas.onmousedown = this.mouseDownHandler.bind(this)
-        this.canvas.onmouseup = this.mouseUpHandler.bind(this)
+        document.onmouseup = this.mouseUpHandler.bind(this)
     }
 
     mouseUpHandler(e) {
+        if(!this.mouseDown) return
         this.mouseDown = false
+        const width = e.target.tagName === 'CANVAS' ? e.pageX-e.target.offsetLeft : this.width
+        const height = e.target.tagName === 'CANVAS' ? e.pageY-e.target.offsetTop : this.height
+        if(width === this.currentX && height === this.currentY) return
         this.socket.send(JSON.stringify({
             method: 'draw',
             id: this.id,
+            username: this.username,
             figure: {
                 type: 'line',
                 x: this.currentX,
                 y: this.currentY,
-                width: e.pageX-e.target.offsetLeft,
-                height: e.pageY-e.target.offsetTop,
+                w: width,
+                h: height,
                 stroke: this.ctx.strokeStyle,
                 lineWidth: this.ctx.lineWidth,
-            }
-        }))
-        this.socket.send(JSON.stringify({
-            method: 'draw',
-            id: this.id,
-            figure: {
-                type: 'finish',
             }
         }))
     }
@@ -46,14 +46,19 @@ export default class Line extends Tool {
         this.ctx.beginPath()
         this.currentX = e.pageX - e.target.offsetLeft;
         this.currentY = e.pageY - e.target.offsetTop;
-        this.ctx.beginPath()
+        this.height = 0
+        this.width = 0
         this.ctx.moveTo(this.currentX, this.currentY)
         this.saved = this.canvas.toDataURL()
     }
 
     mouseMoveHandler(e) {
         if (this.mouseDown) {
-            this.draw(e.pageX-e.target.offsetLeft, e.pageY-e.target.offsetTop);
+            const x = e.pageX-e.target.offsetLeft
+            const y = e.pageY-e.target.offsetTop
+            this.height = y
+            this.width = x
+            this.draw(x, y)
         }
     }
 
@@ -67,10 +72,13 @@ export default class Line extends Tool {
             this.ctx.moveTo(this.currentX, this.currentY )
             this.ctx.lineTo(x, y)
             this.ctx.stroke()
+            // todo: remove
+            this.ctx.stroke()
         }.bind(this)
     }
 
-    static draw(ctx, x, y, w, h, stroke, lineWidth) {
+    static draw(ctx, figure) {
+        const {x, y, w, h, stroke, lineWidth} = figure
         const {strokeStyle: lastStroke, lineWidth: lastWidth} = ctx
         ctx.strokeStyle = stroke
         ctx.lineWidth = lineWidth

@@ -3,20 +3,47 @@ import {makeAutoObservable} from "mobx";
 class CanvasState {
     canvas: HTMLCanvasElement
     socket: WebSocket
-    sessionId: number
+    name: string
+    id: string
+    isPainter: boolean
     undoList: string[]
     redoList: string[]
+    drawingList: any[]
     username: string
+    confines: {spectatorCode: boolean, painterCode: boolean, name: string}
+    userId: string
 
     constructor() {
         makeAutoObservable(this)
         this.undoList = []
         this.redoList = []
+        this.drawingList = []
     }
 
-    setSessionId(id) {
-        this.sessionId = id
+    pushToDrawingList(draw){
+        this.drawingList.push(draw)
     }
+
+    resetDrawingList(){
+        this.drawingList = []
+    }
+
+    setConfines(obj){
+        this.confines = obj
+    }
+
+    setName(value) {
+        this.name = value
+    }
+
+    setIsPainter(value) {
+        this.isPainter = value
+    }
+
+    setId(id) {
+        this.id = id
+    }
+
     setSocket(socket) {
         this.socket = socket
     }
@@ -27,6 +54,10 @@ class CanvasState {
 
     setCanvas(canvas) {
         this.canvas = canvas
+    }
+
+    setUserId(id){
+        this.userId = id
     }
 
     pushToUndo(data) {

@@ -1,31 +1,136 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {useParams} from "react-router-dom";
+import {useLocation, useNavigate, useParams} from "react-router-dom";
 import {observer} from "mobx-react-lite";
 import canvasState from "../store/canvasState";
-import axios from "axios";
 import toolState from "../store/toolState";
 import Brush from "../tools/Brush";
-import PageNotFound from "../pages/PageNotFound";
-import {RouteNames} from "../routes";
 import Rect from "../tools/Rect";
 import Eraser from "../tools/Eraser";
 import Circle from "../tools/Circle";
 import Line from "../tools/Line";
 import ImageService from "../API/ImageService";
 import WsService from "../API/WsService";
+import LocalStoreService from "../API/LocalStoreService";
+import CanvasService from "../API/CanvasService";
+import {Button, Form, InputGroup, Modal} from "react-bootstrap";
+import {IConfines, sha256} from "../utils";
+import CanvasState from "../store/canvasState";
 
 const Canvas = observer(() => {
     const canvasRef = useRef<HTMLCanvasElement>()
-    const params = useParams()
+    const {id} = useParams()
+
+    const [modalVisible, setModalVisible] = useState(false)
+
+    const [{ isLoading, isError, error }, setSuspense] = useState({ isLoading: false, isError: false, error: null })
+    const setError = (error) => {setSuspense({isLoading: false, isError: true, error})}
+    const setLoading = (value) => {setSuspense(prev => {return {...prev, isLoading: value}})}
+
+    const [code, setCode] = useState('')
+    const inputRef = useRef<HTMLInputElement>()
+
+    const [canvasReady, setCanvasReady] = useState(false)
 
     useEffect(() => {
-        if(!canvasState.username){
-            canvasState.setUsername(`f${(+new Date).toString(16)}`)
+        window.onunload = closeWs
+        const getConfinesController = new AbortController()
+        if(canvasState.id !== id) {
+            canvasState.setId(id)
+            {(async () => {
+                const canvasData = LocalStoreService.getCanvas(id)
+                const confines = (await CanvasService.getConfines(id, getConfinesController.signal)).data
+                canvasState.setConfines(confines)
+                if(!canvasData) {
+                    if(!confines.spectatorCode && !confines.painterCode){
+                        openWsHandler('', confines.name)
+                    } else setModalVisible(true)
+                } else{
+                    openWsHandler(canvasData.code, canvasData.name, false)
+                }
+            })()}
         }
-        canvasState.setCanvas(canvasRef.current)
+        return () => {
+            getConfinesController.abort()
+            closeWs()
+        }
+    }, [id])
+
+    function openWsHandler(code, name, needSaveCode = true){
+        const socket = WsService.openWs()
+        canvasState.setSocket(socket)
+        canvasState.setName(name)
+        canvasState.setUsername(LocalStoreService.getUsername())
+        canvasState.resetDrawingList()
+        socket.onopen = () => {
+            console.log('ws open')
+            socket.send(JSON.stringify({
+                id: id,
+                username: canvasState.username,
+                method: "connection",
+                code
+            }))
+        }
+        socket.onmessage = (event) => {
+            const msg = JSON.parse(event.data)
+            console.log(msg)
+            switch (msg.method) {
+                case "connection":
+                    CanvasState.pushToDrawingList(msg)
+                    console.log(`пользователь ${msg.username} присоединился`)
+                    break
+                case "get-user-id":
+                    setLoading(false)
+                    setModalVisible(false)
+                    needSaveCode && LocalStoreService.setCanvas(id, {name, code})
+                    canvasState.setUserId(msg.userId)
+                    canvasState.setIsPainter(msg.isPainter)
+                    if(msg.isPainter){
+                        toolState.setTool(new Brush(canvasRef.current, socket, id, canvasState.username))
+                    }
+                    canvasState.setCanvas(canvasRef.current)
+                    fillCanvasContent()
+                    break
+                case "draw":
+                    CanvasState.pushToDrawingList(msg)
+                    drawHandler(msg)
+                    break
+                case "error":
+                    setError(msg)
+                    switch (msg.code){
+                        case 2402:
+                            console.error(msg.msg)
+                            break
+                        case 2403:
+                            socket.close()
+                            break
+                        case 2404:
+                            socket.close()
+                            break
+                        default:
+                            console.error(msg)
+                    }
+                    break
+            }
+        }
+        socket.onclose = (e) => {
+            canvasState.pushToDrawingList({method: 'close'})
+            console.error(e)
+        }
+    }
+
+    function closeWs(){
+        if(!canvasState.socket || canvasState.socket.readyState !== 1) return
+        canvasState.socket.send(JSON.stringify({
+            method: 'leave',
+            id,
+            username: canvasState.username
+        }))
+        canvasState.socket.close()
+    }
+
+    function fillCanvasContent(){
         const ctx = canvasRef.current.getContext('2d')
-        // axios.get(`http://localhost:5000/image?id=${params.id}`)
-        ImageService.getImage(params.id)
+        ImageService.getImage(id, canvasState.userId)
             .then(response => {
                 console.log(response)
                 const img = new Image()
@@ -34,67 +139,42 @@ const Canvas = observer(() => {
                     img.onload = () => {
                         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
                         ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height)
+                        setCanvasReady(true)
                     }
                 }else{
-                    console.log('post')
                     const canvasImgUrl = canvasRef.current.toDataURL()
-                    ImageService.postImage(params.id, canvasState.username, canvasImgUrl)
+                    ImageService.postImage(id, canvasState.userId, canvasState.username, canvasImgUrl)
                         .then(response => console.log(response.data))
                     img.src = canvasImgUrl
                     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
                     ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height)
+                    setCanvasReady(true)
                 }
             })
-    }, [params.id])
-
-    useEffect(() => {
-        if (canvasState.username) {
-            // const socket = new WebSocket(`ws://sphenoid-tested-alyssum.glitch.me/`);
-            const socket = WsService.openWs()
-            canvasState.setSocket(socket)
-            canvasState.setSessionId(params.id)
-            toolState.setTool(new Brush(canvasRef.current, socket, params.id))
-            socket.onopen = () => {
-                console.log('Подключение установлено')
-                socket.send(JSON.stringify({
-                    id:params.id,
-                    username: canvasState.username,
-                    method: "connection"
-                }))
-            }
-            socket.onmessage = (event) => {
-                const msg = JSON.parse(event.data)
-                switch (msg.method) {
-                    case "connection":
-                        console.log(`пользователь ${msg.username} присоединился`)
-                        break
-                    case "draw":
-                        console.log('draw')
-                        drawHandler(msg)
-                        break
-                }
-            }
-        }
-    }, [params.id])
+    }
 
     const drawHandler = (msg) => {
+        if(msg.userId === canvasState.userId) return
         const figure = msg.figure
         const ctx = canvasState.canvas.getContext('2d')
         switch (figure.type) {
             case "brush":
-                Brush.draw(ctx, figure.x, figure.y, figure.stroke, figure.lineWidth)
+                Brush.draw(ctx, figure)
                 break
             case "rect":
-                Rect.draw(ctx, figure.x, figure.y, figure.width, figure.height, figure.stroke, figure.fill, figure.lineWidth)
+                Rect.draw(ctx, figure)
                 break
             case "eraser":
-                Eraser.draw(ctx, figure.x, figure.y, figure.lineWidth)
+                Eraser.draw(ctx, figure)
                 break
             case "circle":
-                Circle.draw(ctx, figure.x, figure.y, figure.r, figure.stroke, figure.fill, figure.lineWidth)
+                Circle.draw(ctx, figure)
                 break
             case "line":
-                Line.draw(ctx, figure.x, figure.y, figure.width, figure.height, figure.stroke, figure.lineWidth)
+                Line.draw(ctx, figure)
+                break
+            case "clear":
+                canvasState.canvas.getContext('2d').clearRect(0, 0, canvasState.canvas.width, canvasState.canvas.height)
                 break
             case "finish":
                 ctx.beginPath()
@@ -103,14 +183,61 @@ const Canvas = observer(() => {
     }
 
     const mouseUpHandler = () => {
-        canvasState.pushToUndo(canvasRef.current.toDataURL())
-        ImageService.postImage(params.id, canvasState.username, canvasRef.current.toDataURL())
+        // canvasState.pushToUndo(canvasRef.current.toDataURL())
+        if(!canvasState.isPainter) return
+        ImageService.postImage(id, canvasState.userId, canvasState.username, canvasRef.current.toDataURL())
             .then(response => console.log(response.data))
     }
 
     return (
         <div className="canvas">
-            <canvas onMouseUp={() => mouseUpHandler()} ref={canvasRef} width={600} height={400}/>
+            {modalVisible && <Modal show={modalVisible}>
+                <Modal.Header>
+                    <Modal.Title>Код доступа</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {canvasState.confines.spectatorCode
+                        ? <Form.Label>Если вы хотите наблюдать за этим холстом нужно ввести код</Form.Label>
+                        : <Form.Label>Если вы хотите что-то нарисовать на этом холсте нужно ввести код</Form.Label>
+                    }
+                    {error && <Form.Label style={{color: 'red'}}>{error.msg}</Form.Label>}
+                    <InputGroup>
+                        <InputGroup.Text id="inputGroup-sizing-default">
+                            Код
+                        </InputGroup.Text>
+                        <Form.Control
+                            value={code}
+                            onChange={e => setCode(e.target.value)}
+                            ref={inputRef}
+                            aria-label="Default"
+                            aria-describedby="inputGroup-sizing-default"
+                        />
+                    </InputGroup>
+                </Modal.Body>
+                <Modal.Footer>
+                    {!canvasState.confines.spectatorCode && <Button
+                        onClick={() => {
+                            setLoading(true)
+                            openWsHandler('', canvasState.confines.name)
+                        }}
+                        disabled={isLoading}
+                        variant="secondary"
+                    >Без кода</Button>}
+                    <Button
+                        variant="primary"
+                        disabled={isLoading}
+                        onClick={() => {
+                            setLoading(true)
+                            sha256(code).then(code => openWsHandler(code, canvasState.confines.name))
+                        }}
+                    >Присоединиться</Button>
+                </Modal.Footer>
+            </Modal>}
+
+            {!canvasReady && !modalVisible &&  <div className={'plug'}>
+                <span className="loader"></span>
+            </div>}
+            <canvas onMouseUp={() => mouseUpHandler()} ref={canvasRef} width={900} height={500}/>
         </div>
     );
 })
