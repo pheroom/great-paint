@@ -12,6 +12,7 @@ import CanvasService from "../API/CanvasService";
 import canvas from "../components/Canvas";
 import {sha256} from "../utils";
 import CheckBox from "../components/CheckBox.tsx";
+import {useFetching} from "../hooks/useFetching.ts";
 
 const CreateCanvasPage = observer(() => {
     const navigate = useNavigate()
@@ -23,6 +24,11 @@ const CreateCanvasPage = observer(() => {
         isOpen: true,
         isFree: true
     })
+    const [fetchCreate, isCreateLoading, createError] = useFetching(async (name, painterCode, spectatorCode) => {
+        const response = await CanvasService.createCanvas({name, painterCode, spectatorCode})
+        LocalStoreService.setCanvas(response.data.id, {name, code: painterCode || spectatorCode})
+        navigate(`${RouteNames.CANVAS}/${response.data.id}`)
+    })
 
     useEffect(() => {
         canvasState.setId(null)
@@ -32,15 +38,15 @@ const CreateCanvasPage = observer(() => {
         e.preventDefault()
         const spectatorCode = canvasObj.isOpen ? '' : await sha256(canvasObj.spectatorCode)
         const painterCode = canvasObj.isFree ? '' : await sha256(canvasObj.painterCode)
-        CanvasService.createCanvas({name: canvasObj.name, painterCode, spectatorCode})
-            .then(response => {
-                LocalStoreService.setCanvas(response.data.id, {name: canvasObj.name, code: painterCode || spectatorCode})
-                navigate(`${RouteNames.CANVAS}/${response.data.id}`)
-            })
+        fetchCreate(canvasObj.name, painterCode, spectatorCode)
     }
 
     return (
         <div className={'create-canvas'}>
+            {isCreateLoading &&  <div className={'plug'}>
+                <span className="loader"></span>
+            </div>}
+
             <header className={'header'}>
                 <div className={'header__logo-box'}>
                     <img className={'header__logo-img'} src={logo} alt="logo"/>

@@ -26,3 +26,5 @@ export function uuidToColor(str) {
 }
 
 export const names = ['Ash', 'Blaze', 'Bolt', 'Breez', 'Cade', 'Cruz', 'Dash', 'Dex', 'Echo', 'Finn', 'Flash', 'Gage', 'Grey', 'Hawk', 'Jax', 'Jet', 'Kai', 'Koda', 'Lark', 'Levi', 'Luxe', 'Maxx', 'Neo', 'Onyx', 'Ozzy', 'Pax', 'Phoenix', 'Quest', 'Raze', 'Rio', 'Rogue', 'Rush', 'Sage', 'Scout', 'Sky', 'Slate', 'Sol', 'Storm', 'Swift', 'Titan', 'Trace', 'Vega', 'Vex', 'Wolf', 'Xander', 'Zenon', 'Zeus', 'Zephyr', 'Zorro', 'Zylo']
+
+export const getRandomName = () => names[Math.floor(Math.random()*names.length)]

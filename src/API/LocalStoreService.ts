@@ -1,4 +1,4 @@
-import {ICanvasData, names} from "../utils";
+import {getRandomName, ICanvasData, names} from "../utils";
 
 enum keys {
     USERNAME = 'username',
@@ -9,7 +9,7 @@ export default class LocalStoreService{
     static getUsername() {
         const response = localStorage.getItem(keys.USERNAME)
         if(!response) {
-            const name = names[Math.floor(Math.random()*names.length)]
+            const name = getRandomName()
             LocalStoreService.setUsername(name)
             return name
         }
