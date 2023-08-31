@@ -14,6 +14,7 @@ import toolState from "../store/toolState.ts";
 import Brush from "../tools/Brush.ts";
 import brushImg from "../assets/brush.png";
 import ButtonIcon from "./ButtonIcon.tsx";
+import PromptModal from "./PromptModal.tsx";
 
 const CanvasInfoModal = observer(() => {
     const [removePromtVisible, setRemovePromtVisible] = useState(false)
@@ -40,20 +41,24 @@ const CanvasInfoModal = observer(() => {
     return (
         <div>
 
-            <Modal show={removePromtVisible} onHide={() => setRemovePromtVisible(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Prompt</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>Вы уверенны, что хотите удалить данные холста с устройства?</Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setRemovePromtVisible(false)}>
-                        Отмена
-                    </Button>
-                    <Button variant="primary" onClick={removeCanvasData}>
-                        Удалить
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+            {/*<Modal show={removePromtVisible} onHide={() => setRemovePromtVisible(false)}>*/}
+            {/*    <Modal.Header closeButton>*/}
+            {/*        <Modal.Title>Prompt</Modal.Title>*/}
+            {/*    </Modal.Header>*/}
+            {/*    <Modal.Body>Вы уверенны, что хотите удалить данные холста с устройства?</Modal.Body>*/}
+            {/*    <Modal.Footer>*/}
+            {/*        <Button variant="secondary" onClick={() => setRemovePromtVisible(false)}>*/}
+            {/*            Отмена*/}
+            {/*        </Button>*/}
+            {/*        <Button variant="primary" onClick={removeCanvasData}>*/}
+            {/*            Удалить*/}
+            {/*        </Button>*/}
+            {/*    </Modal.Footer>*/}
+            {/*</Modal>*/}
+
+            {removePromtVisible && <PromptModal onClick={removeCanvasData} onClose={() => setRemovePromtVisible(false)}
+                                                bodyText={'Вы уверенны, что хотите удалить данные холста с устройства?'}
+                                                successText={'Удалить'}/>}
 
 
             <Modal size="lg" show={true} onHide={() => navigate(-1)}>
@@ -66,7 +71,7 @@ const CanvasInfoModal = observer(() => {
                             <h4 className={'canvas-info__name'}>Название: {`${canvasState.confines.name}`}</h4>
                             <div className={'canvas-info__btn-box'}>
                                 <ButtonIcon
-                                    className={'canvas-info__btn'}
+                                    className={'canvas-info__btn'} data-dismiss="modal"
                                     onClick={() => setRemovePromtVisible(true)}
                                     img={removeImg}
                                     alt={'remove-canvas-data'}/>

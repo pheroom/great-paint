@@ -1,5 +1,5 @@
 import './styles/main.scss'
-import {Link, Route, Routes, useLocation} from "react-router-dom";
+import {Route, Routes, useLocation} from "react-router-dom";
 import PageNotFound from "./pages/PageNotFound";
 import {RouteNames} from "./routes";
 import CanvasPage from "./pages/CanvasPage";
